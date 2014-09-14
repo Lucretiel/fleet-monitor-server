@@ -55,13 +55,13 @@ def generic_scanner(Entity, frequency, fleetctl_args, update_callback):
         process = yield from asyncio.create_subprocess_exec(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL)
+            stderr=asyncio.subprocess.PIPE)
 
         # Retreive data from the process
-        data, _ = yield from process.communicate()
+        data, error = yield from process.communicate()
 
         if process.returncode:
-            raise RuntimeError('fleetctl failed too often', cmd)
+            raise RuntimeError(cmd, error)
 
         # Create an update json and send it to the callback
         update_callback(json.dumps(
