@@ -89,6 +89,8 @@ class WebsocketHandler:
         queue = asyncio.Queue()
         self.sockets.add(queue)
 
+        print('Websocket connected from', path)
+
         try:
             while socket.open:
                 data = yield from queue.get()
@@ -98,6 +100,7 @@ class WebsocketHandler:
             pass
 
         finally:
+            print(path, 'disconnected')
             self.sockets.discard(queue)
 
     def update(entity_data):
@@ -109,10 +112,11 @@ class WebsocketHandler:
             queue.put_nowait(entity_data)
 
     @asyncio.coroutine
-    def serve(self, port, host=None):
+    def serve(self, port, host='0.0.0.0'):
         '''
         Coroutine to create a websocket server
         '''
+        print('Serving fleet monitoring at ws://{}:{}'.format(host, port)
         return websockets.serve(self.connection, host, port)
 
 
