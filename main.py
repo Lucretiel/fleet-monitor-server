@@ -80,7 +80,7 @@ def generic_scanner(Entity, frequency, fleetctl_args, update_callback):
 class WebsocketHandler:
     def __init__(self):
         print("Created websocket handler")
-        self._sockets = set()
+        self.queues = set()
 
     @asyncio.coroutine
     def connection(self, socket, path):
@@ -91,7 +91,7 @@ class WebsocketHandler:
 
         #Create and add a message queue
         queue = asyncio.Queue()
-        self.sockets.add(queue)
+        self.queues.add(queue)
 
         print('Websocket connected from', path)
 
@@ -105,7 +105,7 @@ class WebsocketHandler:
 
         finally:
             print(path, 'disconnected')
-            self.sockets.discard(queue)
+            self.queues.discard(queue)
 
     def update(self, entity_data):
         '''
