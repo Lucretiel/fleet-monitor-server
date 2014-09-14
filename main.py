@@ -169,8 +169,8 @@ def main(argv):
         socket_handler.serve(args.port)]
 
     print("Launching event loop")
-    loop.run_until_complete(
-        asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION))
+    loop.run_until_complete(asyncio.wait(tasks))
+    loop.run_forever()
 
 
 if __name__ == '__main__':
