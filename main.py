@@ -159,18 +159,17 @@ def main(argv):
     tasks = [
         # Unit scanning coroutine
         generic_scanner(
-            Unit, args.unit_freq, socket_handler.update, fleetctl_args),
+            Unit, args.unit_freq, fleetctl_args, socket_handler.update),
 
         # Machine scanning corouting
         generic_scanner(
-            Machine, args.machine_freq, socket_handler.update, fleetctl_args),
+            Machine, args.machine_freq, fleetctl_args, socket_handler.update),
 
         # Websocket server
         socket_handler.serve(args.port)]
 
     print("Launching event loop")
     loop.run_until_complete(asyncio.wait(tasks))
-    loop.run_forever()
 
 
 if __name__ == '__main__':
