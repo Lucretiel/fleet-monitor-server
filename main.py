@@ -135,6 +135,8 @@ def main(argv):
     arg('-c', '--fleetctl', default='fleetctl',
         help="Path to the fleetctl binary")
 
+    args = parser.parse_args(argv[1:])
+
     fleetctl_args = (args.fleetctl,)
 
     # Create socket manager
