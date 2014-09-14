@@ -61,7 +61,7 @@ def generic_scanner(Entity, frequency, fleetctl_args, update_callback):
         data, _ = yield from process.communicate()
 
         if process.returncode:
-            raise RuntimeError('fleetctl failed too often')
+            raise RuntimeError('fleetctl failed too often', cmd)
 
         # Create an update json and send it to the callback
         update_callback(json.dumps(
