@@ -107,7 +107,7 @@ class WebsocketHandler:
             print(path, 'disconnected')
             self.sockets.discard(queue)
 
-    def update(entity_data):
+    def update(self, entity_data):
         '''
         Callback called by the entity scanner to queue up updates for the
         clients
