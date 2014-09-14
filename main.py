@@ -137,7 +137,7 @@ def main(argv):
     endpoint_arg('-t', '--tunnel', nargs=2)
 
     # PARSE ARGS
-    args = parser.parse_args(argv)
+    args = parser.parse_args(argv[1:])
     if args.endpoint:
         fleetctl_args = (
             arg.fleetctl, '--endpoint', 'http://{}:{}'.format(args.endpoint))
