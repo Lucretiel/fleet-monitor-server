@@ -3,6 +3,7 @@ import websockets
 from collections import namedtuple
 from contextlib import suppress
 import argparse
+import json
 
 unit_fields = (
     #'state',
