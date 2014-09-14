@@ -116,7 +116,7 @@ class WebsocketHandler:
         '''
         Coroutine to create a websocket server
         '''
-        print('Serving fleet monitoring at ws://{}:{}'.format(host, port)
+        print('Serving fleet monitoring at ws://{}:{}'.format(host, port))
         return websockets.serve(self.connection, host, port)
 
 
