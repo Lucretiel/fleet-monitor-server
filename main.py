@@ -140,10 +140,10 @@ def main(argv):
     args = parser.parse_args(argv[1:])
     if args.endpoint:
         fleetctl_args = (
-            arg.fleetctl, '--endpoint', 'http://{}:{}'.format(args.endpoint))
+            args.fleetctl, '--endpoint', 'http://{}:{}'.format(*args.endpoint))
     elif args.tunnel:
         fleetctl_args = (
-            arg.fleetctl, '--tunnel', '{}:{}'.format(args.tunnel))
+            args.fleetctl, '--tunnel', '{}:{}'.format(*args.tunnel))
     else:
         fleetctl_args = (arg.fleetctl,)
 
