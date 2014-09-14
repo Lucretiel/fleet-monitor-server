@@ -5,11 +5,11 @@ from contextlib import suppress
 import argparse
 
 unit_fields = (
-    'state',
-    'dstate',
-    'desc',
+    #'state',
+    #'dstate',
+    #'desc',
     'machine',
-    'tmachine',
+    #'tmachine',
     'unit',
     'load',
     'active',
@@ -135,20 +135,7 @@ def main(argv):
     arg('-c', '--fleetctl', default='fleetctl',
         help="Path to the fleetctl binary")
 
-    endpoint_arg = parser.add_mutually_exclusive_group().add_argument
-    endpoint_arg('-e', '--endpoint', nargs=2)
-    endpoint_arg('-t', '--tunnel', nargs=2)
-
-    # PARSE ARGS
-    args = parser.parse_args(argv[1:])
-    if args.endpoint:
-        fleetctl_args = (
-            args.fleetctl, '--endpoint', 'http://{}:{}'.format(*args.endpoint))
-    elif args.tunnel:
-        fleetctl_args = (
-            args.fleetctl, '--tunnel', '{}:{}'.format(*args.tunnel))
-    else:
-        fleetctl_args = (arg.fleetctl,)
+    fleetctl_args = (args.fleetctl,)
 
     # Create socket manager
     socket_handler = WebsocketHandler()
