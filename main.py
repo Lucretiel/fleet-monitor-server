@@ -43,6 +43,8 @@ def generic_scanner(Entity, frequency, fleetctl_args, update_callback):
     # Get the entity type name (unit or machine)
     entity_type = Entity.__name__.lower()
 
+    print("Launched {} scanner".format(entity_type))
+
     # assemble the command
     cmd = fleetctl_args + (
         Entity.list_cmd, '-l', '-no-legend', '-fields',
