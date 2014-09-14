@@ -76,6 +76,7 @@ def generic_scanner(Entity, frequency, fleetctl_args, update_callback):
 
 class WebsocketHandler:
     def __init__(self):
+        print("Created websocket handler")
         self._sockets = set()
 
     @asyncio.coroutine
@@ -165,6 +166,7 @@ def main(argv):
         # Websocket server
         socket_handler.serve(args.port)]
 
+    print("Launching event loop")
     loop.run_until_complete(
         asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION))
 
