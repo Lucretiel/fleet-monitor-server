@@ -1,7 +1,6 @@
 import asyncio
 import websockets
 from collections import namedtuple
-from contextlib import suppress
 import argparse
 import json
 
@@ -24,10 +23,12 @@ machine_fields = (
 
 
 class Unit(namedtuple('Unit', unit_fields)):
+    __slots__ = ()
     list_cmd = 'list-units'
 
 
 class Machine(namedtuple('Machine', machine_fields)):
+    __slots__ = ()
     list_cmd = 'list-machines'
 
 
@@ -62,7 +63,9 @@ def generic_scanner(Entity, frequency, fleetctl_args, update_callback):
         data, error = yield from process.communicate()
 
         if process.returncode:
-            raise RuntimeError(cmd, error)
+            raise RuntimeError(cmd, error.decode())
+
+        data = data.decode()
 
         # Create an update json and send it to the callback
         update_callback(json.dumps(
@@ -93,7 +96,7 @@ class WebsocketHandler:
         queue = asyncio.Queue()
         self.queues.add(queue)
 
-        print('Websocket connected from', path)
+        print('Websocket connected: "{}"'.format(path))
 
         try:
             while socket.open:
@@ -104,7 +107,7 @@ class WebsocketHandler:
             pass
 
         finally:
-            print(path, 'disconnected')
+            print('Websocket disconnected: "{}"'.format(path))
             self.queues.discard(queue)
 
     def update(self, entity_data):
