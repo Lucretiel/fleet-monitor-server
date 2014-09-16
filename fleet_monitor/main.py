@@ -131,27 +131,31 @@ class WebsocketHandler:
         yield from websockets.serve(self.connection, host, port)
         print('Serving websocket server at "ws://{}:{}"'.format(host, port))
 
+###########################
+# ARGUMENTS
+###########################
+
+parser = argparse.ArgumentParser()
+
+# Add normal arguments
+arg = parser.add_argument
+arg('-m', '--machine-freq', type=int, default=10,
+    help="Frequency in seconds of list-machines polling")
+arg('-u', '--unit-freq', type=int, default=2,
+    help="Frequency in seconds of list-units polling")
+arg('-p', '--port', type=int, default=8989)
+arg('-c', '--fleetctl', default='fleetctl',
+    help="Path to the fleetctl binary")
+arg('--endpoint-port', default=4001, type=int)
+arg('--tunnel-port', default=22, type=int)
+
+# Add mutually exclusive endpoint arguments (normal or ssh)
+arg = parser.add_mutually_exclusive_group().add_argument
+arg('-e', '--endpoint', help='Remote host to poll with fleetctl')
+arg('-t', '--tunnel', help='Remote host to connect to with ssh tunnel')
+
 
 def main(argv):
-    parser = argparse.ArgumentParser()
-
-    # Add normal arguments
-    arg = parser.add_argument
-    arg('-m', '--machine-freq', type=int, default=10,
-        help="Frequency in seconds of list-machines polling")
-    arg('-u', '--unit-freq', type=int, default=2,
-        help="Frequency in seconds of list-units polling")
-    arg('-p', '--port', type=int, default=8989)
-    arg('-c', '--fleetctl', default='fleetctl',
-        help="Path to the fleetctl binary")
-    arg('--endpoint-port', default=4001, type=int)
-    arg('--tunnel-port', default=22, type=int)
-
-    # Add mutually exclusive endpoint arguments (normal or ssh)
-    arg = parser.add_mutually_exclusive_group().add_argument
-    arg('-e', '--endpoint', help='Remote host to poll with fleetctl')
-    arg('-t', '--tunnel', help='Remote host to connect to with ssh tunnel')
-
     args = parser.parse_args(argv[1:])
 
     # If we're using a tunnel or endpoint, add it to the command line arguments
