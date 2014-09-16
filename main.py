@@ -7,6 +7,9 @@ import json
 
 EntityType = namedtuple('EntityType', ('type', 'cmd', 'fields'))
 
+#TODO: separate table columns in the dashboard from fields names for fleetctl
+#TODO: find a way to allow all field names, even for later versions of fleet
+#TODO: command line verbosity control
 unit = EntityType('unit', 'list-units', (
     'unit',
     'load',
@@ -66,7 +69,7 @@ def generic_scanner(entity, frequency, fleetctl_args, update_callback):
             print(
                 "Error: {type} scanner failed with error code {code}\n"
                 "Command: {cmd}\n"
-                "Message:\n{msg}\n".format(
+                "Message:\n{msg}".format(
                     type=entity_type, code=process.returncode,
                     cmd=cmd, msg=error.decode()))
             return
@@ -89,7 +92,8 @@ class WebsocketHandler:
     def connection(self, socket, path):
         '''
         Connection coroutine. Creates a queue on which to receive updates, and
-        sends items on the queue to the socket
+        sends items on the queue to the socket. Exits when the connection is
+        closed.
         '''
 
         #Create and add a message queue
@@ -128,8 +132,9 @@ class WebsocketHandler:
 
 
 def main(argv):
-    # ARGS
     parser = argparse.ArgumentParser()
+
+    # Add normal arguments
     arg = parser.add_argument
     arg('-m', '--machine-freq', type=int, default=10,
         help="Frequency in seconds of list-machines polling")
@@ -138,11 +143,27 @@ def main(argv):
     arg('-p', '--port', type=int, default=8989)
     arg('-c', '--fleetctl', default='fleetctl',
         help="Path to the fleetctl binary")
-    #TODO: support for endpoints and tunnels
+    arg('--endpoint-port', default=4001, type=int)
+    arg('--tunnel-port', default=22, type=int)
+
+    # Add mutually exclusive endpoint arguments (normal or ssh)
+    arg = parser.add_mutually_exclusive_group().add_argument
+    arg('-e', '--endpoint', help='Remote host to poll with fleetctl')
+    arg('-t', '--tunnel', help='Remote host to connect to with ssh tunnel')
 
     args = parser.parse_args(argv[1:])
 
-    fleetctl_args = (args.fleetctl,)
+    # If we're using a tunnel or endpoint, add it to the command line arguments
+    def fleetctl_args():
+        yield args.fleetctl
+        if args.endpoint:
+            yield '--endpoint'
+            yield 'http://{}:{}'.format(args.endpoint, args.endpoint_port)
+        elif args.tunnel:
+            yield '--tunnel'
+            yield '{}:{}'.format(args.tunnel, args.tunnel_port)
+
+    fleetctl_args = tuple(fleetctl_args())
 
     # Create socket manager
     socket_handler = WebsocketHandler()
