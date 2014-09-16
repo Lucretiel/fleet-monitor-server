@@ -63,7 +63,13 @@ def generic_scanner(entity, frequency, fleetctl_args, update_callback):
         data, error = yield from process.communicate()
 
         if process.returncode:
-            raise RuntimeError(cmd, error.decode())
+            print(
+                "Error: {type} scanner failed with error code {code}\n"
+                "Command: {cmd}\n"
+                "Message:\n{msg}\n".format(
+                    type=entity_type, code=process.returncode,
+                    cmd=cmd, msg=error.decode())
+            return
 
         data = data.decode()
 
@@ -117,7 +123,7 @@ class WebsocketHandler:
         '''
         Coroutine to create a websocket server
         '''
-        print('Serving fleet monitoring at ws://{}:{}'.format(host, port))
+        print('Serving websocket server at "ws://{}:{}"'.format(host, port))
         return websockets.serve(self.connection, host, port)
 
 
@@ -141,9 +147,7 @@ def main(argv):
     # Create socket manager
     socket_handler = WebsocketHandler()
 
-    # Spawn server
-    loop = asyncio.get_event_loop()
-
+    # Create task coroutines
     tasks = [
         # Unit scanning coroutine
         generic_scanner(
@@ -152,18 +156,21 @@ def main(argv):
             fleetctl_args,
             socket_handler.update),
 
-        # Machine scanning corouting
+        # Machine scanning coroutine
         generic_scanner(
             machine,
             args.machine_freq,
             fleetctl_args,
-            socket_handler.update),
+            socket_handler.update)]
 
-        # Websocket server
-        socket_handler.serve(args.port)]
+    loop = asyncio.get_event_loop()
 
-    print("Launching event loop")
-    loop.run_until_complete(asyncio.wait(tasks))
+    # Spawn the server
+    loop.run_until_complete(socket_handler.serve(args.port))
+
+    # Spawn the scanners. Stop when either one fails.
+    loop.run_until_complete(asyncio.wait(
+        tasks, return_when=asyncio.FIRST_COMPLETED))
 
 
 if __name__ == '__main__':
