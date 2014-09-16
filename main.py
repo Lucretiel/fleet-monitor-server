@@ -68,7 +68,7 @@ def generic_scanner(entity, frequency, fleetctl_args, update_callback):
                 "Command: {cmd}\n"
                 "Message:\n{msg}\n".format(
                     type=entity_type, code=process.returncode,
-                    cmd=cmd, msg=error.decode())
+                    cmd=cmd, msg=error.decode()))
             return
 
         data = data.decode()
