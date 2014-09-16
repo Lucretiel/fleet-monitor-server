@@ -8,8 +8,9 @@ import json
 EntityType = namedtuple('EntityType', ('type', 'cmd', 'fields'))
 
 #TODO: separate table columns in the dashboard from fields names for fleetctl
-#TODO: find a way to allow all field names, even for later versions of fleet
+#TODO: Find a better way to handle different versions of fleet
 #TODO: command line verbosity control
+#TODO: find a way to merge the list-units and list-unit-files data
 unit = EntityType('unit', 'list-units', (
     'unit',
     'load',
@@ -127,8 +128,8 @@ class WebsocketHandler:
         '''
         Coroutine to create a websocket server
         '''
+        yield from websockets.serve(self.connection, host, port)
         print('Serving websocket server at "ws://{}:{}"'.format(host, port))
-        return websockets.serve(self.connection, host, port)
 
 
 def main(argv):
@@ -138,7 +139,7 @@ def main(argv):
     arg = parser.add_argument
     arg('-m', '--machine-freq', type=int, default=10,
         help="Frequency in seconds of list-machines polling")
-    arg('-f', '--unit-freq', type=int, default=2,
+    arg('-u', '--unit-freq', type=int, default=2,
         help="Frequency in seconds of list-units polling")
     arg('-p', '--port', type=int, default=8989)
     arg('-c', '--fleetctl', default='fleetctl',
@@ -187,7 +188,7 @@ def main(argv):
     loop = asyncio.get_event_loop()
 
     # Spawn the server
-    loop.run_until_complete(socket_handler.serve(args.port))
+    loop.create_task(socket_handler.serve(args.port))
 
     # Spawn the scanners. Stop when either one fails.
     loop.run_until_complete(asyncio.wait(
