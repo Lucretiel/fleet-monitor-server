@@ -69,8 +69,7 @@ def generic_scanner(entity, frequency, fleetctl_args, update_callback):
 
         # Create an update json and send it to the callback
         message['items'] = [line.split() for line in data.splitlines()]
-        print(message)
-        update_callback(json.dumps(message), separators=(',', ':'))
+        update_callback(json.dumps(message, separators=(',', ':')))
 
         yield from asyncio.sleep(frequency)
 
@@ -164,9 +163,7 @@ def main(argv):
         socket_handler.serve(args.port)]
 
     print("Launching event loop")
-    loop.run_until_complete(
-        asyncio.wait(tasks),
-        return_when=asyncio.FIRST_EXCEPTION)
+    loop.run_until_complete(asyncio.wait(tasks))
 
 
 if __name__ == '__main__':
