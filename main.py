@@ -8,16 +8,17 @@ import json
 EntityType = namedtuple('EntityType', ('type', 'cmd', 'fields'))
 
 unit = EntityType('unit', 'list-units', (
-    #'state',
-    #'dstate',
-    #'desc',
-    'machine',
-    #'tmachine',
     'unit',
     'load',
     'active',
     'sub',
-    'hash'))
+    'machine',
+    #'state',
+    #'dstate',
+    #'desc',
+    #'tmachine',
+    #'hash'
+    ))
 
 machine = EntityType('machine', 'list-machines', (
     'machine',
