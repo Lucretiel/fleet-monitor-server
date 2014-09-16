@@ -188,7 +188,8 @@ def main(argv):
     loop = asyncio.get_event_loop()
 
     # Spawn the server
-    loop.create_task(socket_handler.serve(args.port))
+    asyncio.async(socket_handler.serve(args.port))
+
 
     # Spawn the scanners. Stop when either one fails.
     loop.run_until_complete(asyncio.wait(
