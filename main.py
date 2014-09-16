@@ -4,7 +4,10 @@ from collections import namedtuple
 import argparse
 import json
 
-unit_fields = (
+
+EntityType = namedtuple('EntityType', ('type', 'cmd', 'fields'))
+
+unit = EntityType('unit', 'list-units', (
     #'state',
     #'dstate',
     #'desc',
@@ -14,26 +17,16 @@ unit_fields = (
     'load',
     'active',
     'sub',
-    'hash')
+    'hash'))
 
-machine_fields = (
+machine = EntityType('machine', 'list-machines', (
     'machine',
     'ip',
-    'metadata')
-
-
-class Unit(namedtuple('Unit', unit_fields)):
-    __slots__ = ()
-    list_cmd = 'list-units'
-
-
-class Machine(namedtuple('Machine', machine_fields)):
-    __slots__ = ()
-    list_cmd = 'list-machines'
+    'metadata'))
 
 
 @asyncio.coroutine
-def generic_scanner(Entity, frequency, fleetctl_args, update_callback):
+def generic_scanner(entity, frequency, fleetctl_args, update_callback):
     '''
     Coroutine to perform the fleetctl polling. Repeatedly calls fleetctl every
     `frequency` seconds, using `fleetctl_args`, which should have a path to
@@ -42,15 +35,21 @@ def generic_scanner(Entity, frequency, fleetctl_args, update_callback):
     command fails.
     '''
 
-    # Get the entity type name (unit or machine)
-    entity_type = Entity.__name__.lower()
+    entity_type, entity_cmd, entity_fields = entity
 
     print("Launched {} scanner".format(entity_type))
 
     # assemble the command
     cmd = fleetctl_args + (
-        Entity.list_cmd, '-l', '-no-legend', '-fields',
-        ','.join(Entity._fields))
+        entity_cmd, '-l', '-no-legend', '-fields',
+        ','.join(entity_fields))
+
+    # Create a template JSON object
+    message = {
+        'type': entity_type,
+        'fields': entity_fields,
+        'items': []
+    }
 
     while True:
         # Launch a fleetctl process
@@ -68,14 +67,9 @@ def generic_scanner(Entity, frequency, fleetctl_args, update_callback):
         data = data.decode()
 
         # Create an update json and send it to the callback
-        update_callback(json.dumps(
-            {
-                'type': entity_type,
-                'items': [
-                    vars(Entity(*line.split()))
-                    for line in data.splitlines()]
-            },
-            separators=(',', ':')))
+        message['items'] = [line.split() for line in data.splitlines()]
+        print(message)
+        update_callback(json.dumps(message), separators=(',', ':'))
 
         yield from asyncio.sleep(frequency)
 
@@ -138,6 +132,7 @@ def main(argv):
     arg('-p', '--port', type=int, default=8989)
     arg('-c', '--fleetctl', default='fleetctl',
         help="Path to the fleetctl binary")
+    #TODO: support for endpoints and tunnels
 
     args = parser.parse_args(argv[1:])
 
@@ -152,17 +147,25 @@ def main(argv):
     tasks = [
         # Unit scanning coroutine
         generic_scanner(
-            Unit, args.unit_freq, fleetctl_args, socket_handler.update),
+            unit,
+            args.unit_freq,
+            fleetctl_args,
+            socket_handler.update),
 
         # Machine scanning corouting
         generic_scanner(
-            Machine, args.machine_freq, fleetctl_args, socket_handler.update),
+            machine,
+            args.machine_freq,
+            fleetctl_args,
+            socket_handler.update),
 
         # Websocket server
         socket_handler.serve(args.port)]
 
     print("Launching event loop")
-    loop.run_until_complete(asyncio.wait(tasks))
+    loop.run_until_complete(
+        asyncio.wait(tasks),
+        return_when=asyncio.FIRST_EXCEPTION)
 
 
 if __name__ == '__main__':
