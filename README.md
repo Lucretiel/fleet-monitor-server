@@ -3,28 +3,26 @@ fleet-monitor-server
 
 Server for monitoring fleet. Pairs with fleet-monitor-dashboard.
 
+Getting Started
+---------------
+
+This project requires Python 3.4, the python websockets module (`pip install -r requirements.txt`), and a local fleetctl binary. To launch the server, run `python3.4 -m fleet_monitor.main <args>` from the project root directory. 
+
 Usage
 -----
 
 - `-h`: Print usage message and exit
-- `-p`: Port on which to host the websocket server
-- `-c`: Path to the fleetctl command
-- `-m`: Frequency in seconds to poll for machine data
-- `-u`: Frequency in seconds to poll for unit data
-- `-e`, `--endpoint-port`: Sepecify an etcd host and port for fleetctl to
-	connect to
-- `-t`, `--tunnel-port`: Specify an ssh host and port for fleetctl to tunnel
-	to.
+- `-p <port>`: Port on which to host the websocket server. Defaults to 8989
+- `-c <cmd>`: Path to the fleetctl command. Defaults to `fleetctl`, searching your current `$PATH`
+- `-m <seconds>`: Frequency in seconds to poll for machine data. Defaults to 10
+- `-u <seconds>`: Frequency in seconds to poll for unit data. Defaults to 2
+- `-e <host>`, `--endpoint-port <port>`: Sepecify an etcd host and port for fleetctl to connect to. This will normally be an etcd endpoint of the cluster; the port defaults to 4001.
+- `-t <host>`, `--tunnel-port`: Specify an ssh host and port for fleetctl to tunnel to. The port defaults to 22.
 
 Design
 ------
 
-When run, the server creates a WebSockets server on the specified port (`-p`)
-(default 8989). Clients connected to this port receive published updates of
-machines and units in the fleetctl cluster. Currently, these updates are
-accumulated by periodically running `fleetctl list-units...` and
-`fleetctl list-machines...`, though when fleetctl releases and HTTP API that
-will be used instead.
+When run, the server creates a WebSockets server on the specified port (`-p`) (default 8989). Clients connected to this port receive published updates of machines and units in the fleetctl cluster. Currently, these updates are accumulated by periodically running `fleetctl list-units...` and `fleetctl list-machines...`, though when fleetctl releases and HTTP API that will be used instead.
 
 Updates sent to the server are of the form:
 
