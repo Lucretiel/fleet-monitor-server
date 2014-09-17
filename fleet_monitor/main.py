@@ -192,8 +192,8 @@ def main(argv):
     loop = asyncio.get_event_loop()
 
     # Spawn the server
+    #TODO: check if this fails (for instance, the port is already in use
     asyncio.async(socket_handler.serve(args.port))
-
 
     # Spawn the scanners. Stop when either one fails.
     loop.run_until_complete(asyncio.wait(
